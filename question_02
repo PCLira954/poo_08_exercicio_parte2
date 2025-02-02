@@ -1,0 +1,64 @@
+class AplicacaoError extends Error {
+    constructor(message: string = "Erro na aplicação.") {
+        super(message)
+        this.name = "AplicacaoError"
+    }
+}
+
+class ContaInexistenteError extends AplicacaoError {
+    constructor(message: string = "Conta não encontrada.") {
+        super(message)
+        this.name = "ContaInexistenteError"
+    }
+}
+
+class Conta {
+    constructor(public numero: string, public saldo: number) {}
+}
+
+class Cliente {
+    constructor(public id: string, public nome: string) {}
+}
+
+class Banco {
+    private contas: Conta[] = []
+    private clientes: Cliente[] = []
+
+    adicionarConta(conta: Conta): void {
+        this.contas.push(conta)
+    }
+
+    adicionarCliente(cliente: Cliente): void {
+        this.clientes.push(cliente)
+    }
+
+    consultarConta(numero: string): Conta {
+        const conta = this.contas.find((c) => c.numero === numero)
+        if (!conta) {
+            throw new ContaInexistenteError(`Conta com número ${numero} não encontrada.`)
+        }
+        return conta
+    }
+
+    consultarContaPorIndice(indice: number): Conta {
+        if (indice < 0 || indice >= this.contas.length) {
+            throw new ContaInexistenteError(`Índice ${indice} não corresponde a uma conta existente.`)
+        }
+        return this.contas[indice]
+    }
+
+    consultarCliente(id: string): Cliente {
+        const cliente = this.clientes.find((c) => c.id === id)
+        if (!cliente) {
+            throw new ContaInexistenteError(`Cliente com ID ${id} não encontrado.`)
+        }
+        return cliente
+    }
+
+    consultarClientePorIndice(indice: number): Cliente {
+        if (indice < 0 || indice >= this.clientes.length) {
+            throw new ContaInexistenteError(`Índice ${indice} não corresponde a um cliente existente.`)
+        }
+        return this.clientes[indice]
+    }
+}

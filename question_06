@@ -1,0 +1,53 @@
+class AplicacaoError extends Error {
+    constructor(message: string = "Erro na aplicação.") {
+        super(message)
+        this.name = "AplicacaoError"
+    }
+}
+
+class PoupancaInvalidaError extends AplicacaoError {
+    constructor(message: string = "A conta não é uma poupança.") {
+        super(message)
+        this.name = "PoupancaInvalidaError"
+    }
+}
+
+class Conta {
+    constructor(public numero: string, public saldo: number) {}
+}
+
+class Poupanca extends Conta {
+    constructor(numero: string, saldo: number) {
+        super(numero, saldo)
+    }
+}
+
+
+class Banco {
+    private contas: Conta[] = []
+
+    adicionarConta(conta: Conta): void {
+        this.contas.push(conta)
+    }
+
+    consultarConta(numero: string): Conta {
+        const conta = this.contas.find((c) => c.numero === numero)
+        if (!conta) {
+            throw new ContaInexistenteError(`Conta com número ${numero} não encontrada.`)
+        }
+        return conta
+    }
+
+    renderJuros(numero: string, taxa: number): void {
+        const conta = this.consultarConta(numero)
+
+        if (!(conta instanceof Poupanca)) {
+            throw new PoupancaInvalidaError()
+        }
+
+        
+        const juros = conta.saldo * taxa
+        conta.saldo += juros
+        console.log(`Juros de ${juros} aplicados na conta ${numero}. Novo saldo: ${conta.saldo}`)
+    }
+}

@@ -1,0 +1,110 @@
+class AplicacaoError extends Error {
+    constructor(message: string = "Erro na aplicação.") {
+        super(message)
+        this.name = "AplicacaoError"
+    }
+}
+
+class ValorVazioError extends AplicacaoError {
+    constructor(message: string = "Valor não pode ser vazio.") {
+        super(message)
+        this.name = "ValorVazioError"
+    }
+}
+
+class NumeroInvalidoError extends AplicacaoError {
+    constructor(message: string = "Número inválido.") {
+        super(message)
+        this.name = "NumeroInvalidoError"
+    }
+}
+
+class ValorInvalidoError extends AplicacaoError {
+    constructor(message: string = "Valor inválido. O valor deve ser maior que zero.") {
+        super(message)
+        this.name = "ValorInvalidoError"
+    }
+}
+
+class Conta {
+    constructor(public numero: string, public saldo: number = 0) {}
+
+    depositar(valor: number): void {
+        this.saldo += valor
+        console.log(`Depósito de ${valor} realizado na conta ${this.numero}. Novo saldo: ${this.saldo}`)
+    }
+
+    sacar(valor: number): void {
+        if (this.saldo < valor) {
+            throw new SaldoInsuficienteError(`Saldo insuficiente na conta ${this.numero}.`)
+        }
+        this.saldo -= valor
+        console.log(`Saque de ${valor} realizado na conta ${this.numero}. Novo saldo: ${this.saldo}`)
+    }
+}
+
+class App {
+    
+    static validarValorVazio(valor: string, campo: string): void {
+        if (!valor || valor.trim() === "") {
+            throw new ValorVazioError(`O campo ${campo} não pode ser vazio.`)
+        }
+    }
+
+    
+    static validarNumero(valor: string, campo: string): number {
+        const numero = parseFloat(valor)
+        if (isNaN(numero)) {
+            throw new NumeroInvalidoError(`O campo ${campo} deve ser um número válido.`)
+        }
+        return numero
+    }
+
+    
+    static validarValorPositivo(valor: number, campo: string): void {
+        if (valor <= 0) {
+            throw new ValorInvalidoError(`O campo ${campo} deve ser maior que zero.`)
+        }
+    }
+
+    
+    static criarConta(numero: string, saldoInicial: string): Conta {
+        try {
+            
+            this.validarValorVazio(numero, "número da conta")
+            this.validarValorVazio(saldoInicial, "saldo inicial")
+            const saldo = this.validarNumero(saldoInicial, "saldo inicial")
+            this.validarValorPositivo(saldo, "saldo inicial")
+
+            
+            return new Conta(numero, saldo)
+        } catch (error) {
+            if (error instanceof AplicacaoError) {
+                console.error(error.message)
+            } else {
+                console.error("Erro desconhecido:", error)
+            }
+            throw error
+        }
+    }
+
+    
+    static depositar(conta: Conta, valor: string): void {
+        try {
+            
+            this.validarValorVazio(valor, "valor do depósito")
+            const valorDeposito = this.validarNumero(valor, "valor do depósito")
+            this.validarValorPositivo(valorDeposito, "valor do depósito")
+
+            
+            conta.depositar(valorDeposito)
+        } catch (error) {
+            if (error instanceof AplicacaoError) {
+                console.error(error.message)
+            } else {
+                console.error("Erro desconhecido:", error)
+            }
+        }
+    }
+}
+

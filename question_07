@@ -1,0 +1,105 @@
+class AplicacaoError extends Error {
+    constructor(message: string = "Erro na aplicação.") {
+        super(message)
+        this.name = "AplicacaoError"
+    }
+}
+
+class CpfInvalidoError extends AplicacaoError {
+    constructor(message: string = "CPF inválido.") {
+        super(message)
+        this.name = "CpfInvalidoError"
+    }
+}
+
+class DataNascimentoInvalidaError extends AplicacaoError {
+    constructor(message: string = "Data de nascimento inválida.") {
+        super(message)
+        this.name = "DataNascimentoInvalidaError"
+    }
+}
+
+class ContaDuplicadaError extends AplicacaoError {
+    constructor(message: string = "A conta já pertence a outro cliente.") {
+        super(message)
+        this.name = "ContaDuplicadaError"
+    }
+}
+
+class Conta {
+    constructor(public numero: string, public saldo: number = 0) {}
+}
+
+class Cliente {
+    private static clientes: Cliente[] = []
+
+    constructor(
+        public cpf: string,
+        public nome: string,
+        public dataNascimento: Date,
+        public conta: Conta
+    ) {
+        this.validarCpf(cpf)
+        this.validarDataNascimento(dataNascimento)
+        this.validarContaUnica(conta)
+        Cliente.clientes.push(this)
+    }
+
+    private validarCpf(cpf: string): void {
+        if (!cpf || cpf.length !== 11 || !this.validarDigitosCpf(cpf)) {
+            throw new CpfInvalidoError()
+        }
+    }
+
+    private validarDigitosCpf(cpf: string): boolean {
+        // Verifica se todos os dígitos são iguais (CPF inválido)
+        if (/^(\d)\1{10}$/.test(cpf)) {
+            return false
+        }
+
+
+        let soma = 0;
+        for (let i = 0; i < 9; i++) {
+            soma += parseInt(cpf.charAt(i)) * (10 - i)
+        }
+        let resto = (soma * 10) % 11
+        if (resto === 10 || resto === 11) resto = 0
+        if (resto !== parseInt(cpf.charAt(9))) {
+            return false
+        }
+
+        soma = 0
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(cpf.charAt(i)) * (11 - i)
+        }
+        resto = (soma * 10) % 11
+        if (resto === 10 || resto === 11) resto = 0
+        if (resto !== parseInt(cpf.charAt(10))) {
+            return false
+        }
+
+        return true
+    }
+
+    private validarDataNascimento(data: Date): void {
+        const hoje = new Date()
+        const idade = hoje.getFullYear() - data.getFullYear()
+
+      
+        if (
+            isNaN(data.getTime()) || 
+            idade < 18 || 
+            (idade === 18 && hoje < new Date(hoje.getFullYear(), data.getMonth(), data.getDate())) 
+        ) {
+            throw new DataNascimentoInvalidaError()
+        }
+    }
+
+    
+    private validarContaUnica(conta: Conta): void {
+        const contaExistente = Cliente.clientes.find((cliente) => cliente.conta.numero === conta.numero);
+        if (contaExistente) {
+            throw new ContaDuplicadaError()
+        }
+    }
+}
